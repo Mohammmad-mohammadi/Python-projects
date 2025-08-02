@@ -1,0 +1,138 @@
+import sqlite3
+
+conn = sqlite3.connect("books.db")
+cursor = conn.cursor()
+
+cursor.execute(''' 
+CREATE TABLE IF NOT EXISTS Books(
+    ID INTEGER PRIMARY KEY AUTOINCREMENT,
+    Title TEXT NOT NULL,
+    Author TEXT NOT NULL,
+    Publish_year INTEGER NOT NULL,
+    Genre TEXT,
+    Language TEXT,
+    Pages INTEGER,
+    Rating REAL,
+    ISBN TEXT,
+    Publisher TEXT,
+    Read_status TEXT,
+    Date_added TEXT,
+    Favorite INTEGER,
+    Location TEXT,
+    Notes TEXT,
+    Tags TEXT,
+    Loaned_to TEXT,
+    Date_finished TEXT
+)''')
+conn.commit()
+
+def add_book():
+    title = input("Title: ")
+    author = input("Author: ")
+    publish_year = int(input("Publish year: "))
+    genre = input("Genre: ")
+    language = input("Language: ")
+    pages = int(input("Pages: "))
+    rating = float(input("Rating (0-10): "))
+    isbn = input("ISBN: ")
+    publisher = input("Publisher: ")
+    read_status = input("Read status (read/unread/in-progress): ")
+    date_added = input("Date added (YYYY-MM-DD): ")
+    favorite = int(input("Favorite (1 for yes, 0 for no): "))
+    location = input("Location: ")
+    notes = input("Notes: ")
+    tags = input("Tags: ")
+    loaned_to = input("Loaned to: ")
+    date_finished = input("Date finished (YYYY-MM-DD): ")
+
+    cursor.execute('''
+        INSERT INTO Books
+        (Title, Author, Publish_year, Genre, Language, Pages, Rating, ISBN, Publisher, Read_status, Date_added, Favorite, Location, Notes, Tags, Loaned_to, Date_finished)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ''', (title, author, publish_year, genre, language, pages, rating, isbn, publisher, read_status, date_added, favorite, location, notes, tags, loaned_to, date_finished))
+    conn.commit()
+    print("Book added.")
+
+def view_books():
+    cursor.execute("SELECT * FROM Books")
+    for row in cursor.fetchall():
+        print(row)
+
+def search_books():
+    keyword = input("Enter keyword to search (title or author): ")
+    cursor.execute("SELECT * FROM Books WHERE Title LIKE ? OR Author LIKE ?", (f'%{keyword}%', f'%{keyword}%'))
+    results = cursor.fetchall()
+    if results:
+        for book in results:
+            print(book)
+    else:
+        print("No results found.")
+
+def update_book():
+    book_id = int(input("Book ID to update: "))
+    print("Leave field empty to keep current value.")
+    cursor.execute("SELECT * FROM Books WHERE ID = ?", (book_id,))
+    book = cursor.fetchone()
+    if not book:
+        print("No book found with that ID.")
+        return
+    title = input(f"Title [{book[1]}]: ") or book[1]
+    author = input(f"Author [{book[2]}]: ") or book[2]
+    publish_year = input(f"Publish year [{book[3]}]: ") or book[3]
+    genre = input(f"Genre [{book[4]}]: ") or book[4]
+    language = input(f"Language [{book[5]}]: ") or book[5]
+    pages = input(f"Pages [{book[6]}]: ") or book[6]
+    rating = input(f"Rating [{book[7]}]: ") or book[7]
+    isbn = input(f"ISBN [{book[8]}]: ") or book[8]
+    publisher = input(f"Publisher [{book[9]}]: ") or book[9]
+    read_status = input(f"Read status [{book[10]}]: ") or book[10]
+    date_added = input(f"Date added [{book[11]}]: ") or book[11]
+    favorite = input(f"Favorite [{book[12]}]: ") or book[12]
+    location = input(f"Location [{book[13]}]: ") or book[13]
+    notes = input(f"Notes [{book[14]}]: ") or book[14]
+    tags = input(f"Tags [{book[15]}]: ") or book[15]
+    loaned_to = input(f"Loaned to [{book[16]}]: ") or book[16]
+    date_finished = input(f"Date finished [{book[17]}]: ") or book[17]
+
+    cursor.execute('''
+        UPDATE Books SET Title = ?, Author = ?, Publish_year = ?, Genre = ?, Language = ?, Pages = ?, Rating = ?, ISBN = ?, Publisher = ?, Read_status = ?, Date_added = ?, Favorite = ?, Location = ?, Notes = ?, Tags = ?, Loaned_to = ?, Date_finished = ?
+        WHERE ID = ?
+    ''', (title, author, int(publish_year), genre, language, int(pages), float(rating), isbn, publisher, read_status, date_added, int(favorite), location, notes, tags, loaned_to, date_finished, book_id))
+    conn.commit()
+    print("Book updated.")
+
+def delete_book():
+    book_id = int(input("Book ID to delete: "))
+    cursor.execute("DELETE FROM Books WHERE ID = ?", (book_id,))
+    conn.commit()
+    print("Book deleted.")
+
+def main_menu():
+    while True:
+        print("\n==== The Imaginary Library ====")
+        print("1. Add Book")
+        print("2. View All Books")
+        print("3. Search Books")
+        print("4. Update Book")
+        print("5. Delete Book")
+        print("6. Exit")
+        choice = input("Select an option: ")
+        if choice == "1":
+            add_book()
+        elif choice == "2":
+            view_books()
+        elif choice == "3":
+            search_books()
+        elif choice == "4":
+            update_book()
+        elif choice == "5":
+            delete_book()
+        elif choice == "6":
+            print("Goodbye.")
+            break
+        else:
+            print("Invalid option.")
+
+if __name__ == "__main__":
+    main_menu()
+    conn.close()
